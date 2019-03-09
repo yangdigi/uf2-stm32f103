@@ -29,6 +29,8 @@
 
 #include <libopencm3/usb/msc.h>
 
+#include <libopencm3/stm32/gpio.h>
+
 static inline void __set_MSP(uint32_t topOfMainStack) {
     asm("msr msp, %0" : : "r" (topOfMainStack));
 }
@@ -88,14 +90,16 @@ int main(void) {
 
         usbd_device* usbd_dev = usb_setup();
         //dfu_setup(usbd_dev, &target_manifest_app, NULL, NULL);
-       	usb_msc_init(usbd_dev, 0x82, 64, 0x01, 64, "Example Ltd", "UF2 Bootloader",
+       	usb_msc_init(usbd_dev, 0x82, 64, 0x01, 64, "YDKB", "UF2 Bootloader",
 		    "42.00", UF2_NUM_BLOCKS, read_block, write_block);
         winusb_setup(usbd_dev);
 
         int cycleCount = 0;
         int br = 500;
         int d = 1;
-        
+
+        static uint32_t button_up = 0;
+
         while (1) {
             cycleCount++;
             
@@ -118,6 +122,14 @@ int main(void) {
 
                 if (appValid && !msc_started && msTimer > 1000) {
                     target_manifest_app();
+                }
+
+                if (!button_up) {
+                    button_up = gpio_get(GPIOB, GPIO15);
+                } else {
+                    if (!gpio_get(GPIOB, GPIO15)) {
+                        jump_to_application();
+                    }
                 }
             }
 

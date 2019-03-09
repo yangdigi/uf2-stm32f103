@@ -18,9 +18,12 @@
 #define UF2_FLAG_NOFLASH 0x00000001
 #define UF2_FLAG_FAMILYID_PRESENT 0x00002000
 
-#define UF2_IS_MY_FAMILY(bl)                                                                       \
+//#define UF2_IS_MY_FAMILY(bl)                                                                       \
     (((bl)->flags & UF2_FLAG_FAMILYID_PRESENT) == 0 || (bl)->familyID == UF2_FAMILY)
 
+#define UF2_IS_MY_FAMILY(bl)                                                                       \
+    (((bl)->flags == UF2_FLAG_FAMILYID_PRESENT) && (bl)->familyID == UF2_FAMILY)
+    
 #define MAX_BLOCKS (FLASH_SIZE_OVERRIDE / 256 + 100)
 typedef struct {
     uint32_t numBlocks;

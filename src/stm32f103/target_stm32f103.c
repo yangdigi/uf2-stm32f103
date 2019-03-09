@@ -185,7 +185,24 @@ bool target_get_force_app(void) {
 }
 
 bool target_get_force_bootloader(void) {
-    bool force = true;
+    bool force = false;
+
+    // Set A3 to output low
+    gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_10_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO3);
+    gpio_clear(GPIOA, GPIO3);
+
+    // Set B15 as Input Mode with Pull-ups
+    gpio_set_mode(GPIOB, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, GPIO15);
+    gpio_set(GPIOB, GPIO15);
+
+    // Wait 1uS so the pull-up settles...
+    for(int i = 0; i < 72; i++) {
+        asm volatile ("nop\n");
+    }
+    if (!gpio_get(GPIOB, GPIO15)) {
+        return true;
+    }
+
     /* Check the RTC backup register */
     uint32_t cmd = backup_read(BKP0);
     if (cmd == CMD_BOOT) {
